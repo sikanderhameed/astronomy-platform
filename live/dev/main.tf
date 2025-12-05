@@ -111,6 +111,41 @@ module "crossplane" {
   cluster_name              = module.eks.cluster_name
   cluster_oidc_provider_arn = module.eks.oidc_provider_arn
   cluster_oidc_provider_url = module.eks.cluster_oidc_issuer_url
+  namespace                 = "crossplane-system"
 
   depends_on = [module.eks]
+}
+
+output "crossplane_role_arn" {
+  description = "ARN of the IAM role for Crossplane AWS provider"
+  value       = module.crossplane.crossplane_role_arn
+}
+
+output "crossplane_role_name" {
+  description = "Name of the IAM role for Crossplane AWS provider"
+  value       = module.crossplane.crossplane_role_name
+}
+
+# Velero Module
+module "velero" {
+  source = "../../modules/velero"
+
+  cluster_name              = module.eks.cluster_name
+  cluster_oidc_provider_arn = module.eks.oidc_provider_arn
+  
+  tags = {
+    Environment = "dev"
+    Project     = "astronomy"
+    ManagedBy   = "Terraform"
+  }
+}
+
+output "velero_s3_bucket_name" {
+  description = "Name of the S3 bucket for Velero backups"
+  value       = module.velero.s3_bucket_name
+}
+
+output "velero_iam_role_arn" {
+  description = "ARN of the IAM role for Velero"
+  value       = module.velero.iam_role_arn
 }
